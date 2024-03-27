@@ -1,0 +1,11 @@
+{
+  "name": "hardhat-project",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.1"
+  },
+  "dependencies": {
+    "@imtbl/contracts": "^2.2.3",
+    "dotenv": "^16.4.5"
+  }
+}
