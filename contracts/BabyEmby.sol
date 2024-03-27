@@ -57,8 +57,6 @@ contract BabyEmby is ImmutableERC721 {
         address to,
         uint256 tokenId
     ) external onlyRole(MINTER_ROLE) {
-        address minter = msg.sender;
-        _approve(minter, tokenId);
         _transfer(from, to, tokenId);
     }
 }
