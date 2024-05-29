@@ -1,0 +1,16 @@
+{
+    "name": "Rookie 1",
+    "description": "Pixelmon Adventure Badge",
+    "image": "https://store.ewtd-ipfs.net/pixelmon-badges/ROOKIE_1.png",
+    "external_link": "",
+    "animation_url": "",
+    "youtube_url": "",
+    "attributes": {
+        "traits": [
+            {
+                "trait_type": "level",
+                "value": "1"
+            }
+        ]
+    }
+}

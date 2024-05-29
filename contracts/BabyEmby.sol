@@ -40,6 +40,18 @@ contract BabyEmby is ImmutableERC721 {
         }
     }
 
+    //override approve and approveForAll to prevent dead listing
+    function approve(address to, uint256 tokenId) public pure override {
+        revert TokenSoulbound();
+    }
+
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public pure override {
+        revert TokenSoulbound();
+    }
+
     function _beforeTokenTransfer(
         address from,
         address to,

@@ -13,6 +13,10 @@ const config: HardhatUserConfig = {
 		},
 	},
 	networks: {
+		mainnet: {
+			url: "https://rpc.immutable.com/",
+			accounts: [process.env.PRIVATE_KEY!],
+		},
 		testnet: {
 			url: "https://rpc.testnet.immutable.com/",
 			accounts: [process.env.PRIVATE_KEY!],

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "@imtbl/contracts/contracts/token/erc721/preset/ImmutableERC721.sol";
+error TokenSoulbound();
 
 contract BoosterKey is ImmutableERC721 {
     constructor(
@@ -28,6 +29,30 @@ contract BoosterKey is ImmutableERC721 {
 
     function minterBurn(uint256 tokenId) external onlyRole(MINTER_ROLE) {
         _burn(tokenId);
+    }
+
+    //override approve and approveForAll to prevent dead listing
+    function approve(address to, uint256 tokenId) public pure override {
+        revert TokenSoulbound();
+    }
+
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public pure override {
+        revert TokenSoulbound();
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint256 batchSize
+    ) internal override {
+        if (!hasRole(MINTER_ROLE, msg.sender)) {
+            revert TokenSoulbound();
+        }
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
     function minterBurnBatch(
