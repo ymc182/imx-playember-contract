@@ -16,6 +16,7 @@ describe("Test", function () {
 		const Forwarder = await hre.ethers.getContractFactory("AnalyticsForwarder");
 		const Context = await hre.ethers.getContractFactory("AnalyticsContext");
 		const forwarder = (await Forwarder.deploy()) as AnalyticsForwarder;
+		const badForwarder = (await Forwarder.deploy()) as AnalyticsForwarder;
 		const context = (await Context.deploy(
 			await forwarder.getAddress()
 		)) as AnalyticsContext;
@@ -23,12 +24,15 @@ describe("Test", function () {
 		return {
 			forwarder,
 			context,
+			badForwarder,
 		};
 	}
 
 	describe("Deployment", function () {
 		it("Should deploy", async function () {
-			const { forwarder, context } = await loadFixture(deployBoosterKeyFixture);
+			const { forwarder, context, badForwarder } = await loadFixture(
+				deployBoosterKeyFixture
+			);
 			const [deployer, caller] = await hre.ethers.getSigners();
 
 			const chainId = await hre.ethers.provider
@@ -59,7 +63,7 @@ describe("Test", function () {
 				from: caller.address,
 				to: await context.getAddress(),
 				value: 0,
-				gas: 1000000,
+				gas: 10000,
 				nonce: 0,
 				data: data,
 			};
@@ -69,6 +73,18 @@ describe("Test", function () {
 				context,
 				"MetaTransactionExecuted"
 			);
+			const req2 = {
+				from: caller.address,
+				to: await context.getAddress(),
+				value: 0,
+				gas: 10000,
+				nonce: 1,
+				data: data,
+			};
+			const sig2 = await caller.signTypedData(domain, types, req2);
+			await forwarder.execute(req2, sig2).catch((e) => {
+				console.log("Error", e);
+			});
 		});
 	});
 });
