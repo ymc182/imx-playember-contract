@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-
+import "@xyrusworx/hardhat-solidity-json";
 const config: HardhatUserConfig = {
 	solidity: {
 		version: "0.8.19",

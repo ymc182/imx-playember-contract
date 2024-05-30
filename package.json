@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@imtbl/contracts": "^2.2.3",
+    "@xyrusworx/hardhat-solidity-json": "^1.0.2",
     "dotenv": "^16.4.5"
   }
 }

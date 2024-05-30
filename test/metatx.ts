@@ -15,8 +15,12 @@ describe("Test", function () {
 		const [deployer] = await hre.ethers.getSigners();
 		const Forwarder = await hre.ethers.getContractFactory("AnalyticsForwarder");
 		const Context = await hre.ethers.getContractFactory("AnalyticsContext");
-		const forwarder = (await Forwarder.deploy()) as AnalyticsForwarder;
-		const badForwarder = (await Forwarder.deploy()) as AnalyticsForwarder;
+		const forwarder = (await Forwarder.deploy(
+			deployer.address
+		)) as AnalyticsForwarder;
+		const badForwarder = (await Forwarder.deploy(
+			deployer.address
+		)) as AnalyticsForwarder;
 		const context = (await Context.deploy(
 			await forwarder.getAddress()
 		)) as AnalyticsContext;
@@ -46,8 +50,6 @@ describe("Test", function () {
 				verifyingContract: await forwarder.getAddress(),
 			};
 
-			//call the doSomething function in the context contract
-			const data = context.interface.encodeFunctionData("earnBadges");
 			const types = {
 				ForwardRequest: [
 					{ name: "from", type: "address" },
@@ -59,32 +61,28 @@ describe("Test", function () {
 				],
 			};
 
-			const req = {
-				from: caller.address,
-				to: await context.getAddress(),
-				value: 0,
-				gas: 10000,
-				nonce: 0,
-				data: data,
-			};
-			console.log(" Caller", caller.address);
-			const sig = await caller.signTypedData(domain, types, req);
-			await expect(forwarder.execute(req, sig)).to.emit(
-				context,
-				"MetaTransactionExecuted"
-			);
-			const req2 = {
-				from: caller.address,
-				to: await context.getAddress(),
-				value: 0,
-				gas: 10000,
-				nonce: 1,
-				data: data,
-			};
-			const sig2 = await caller.signTypedData(domain, types, req2);
-			await forwarder.execute(req2, sig2).catch((e) => {
-				console.log("Error", e);
-			});
+			const reqs = [];
+			const sigs = [];
+			for (let i = 0; i < 10; i++) {
+				const randomCaller = ethers.Wallet.createRandom();
+				const functionData = context.interface.encodeFunctionData(
+					"earnBadges",
+					[randomCaller.address]
+				);
+				const req = {
+					from: randomCaller.address,
+					to: await context.getAddress(),
+					value: 0,
+					gas: 5000,
+					nonce: 0,
+					data: functionData,
+				};
+				reqs.push(req);
+				const sig = await randomCaller.signTypedData(domain, types, req);
+				sigs.push(sig);
+			}
+
+			await forwarder.batchExecuteMetaTransaction(reqs, sigs);
 		});
 	});
 });
