@@ -48,7 +48,8 @@ describe("PackPayment", function () {
 		const [deployer, receiver] = await hre.ethers.getSigners();
 
 		//add ERC20 token to payment
-		await packPayment.CreatePack("Gold", ethers.parseUnits("100", 18), 3);
+		await packPayment.createPack("Gold", ethers.parseUnits("100", 18), 3);
+		await packPayment.createPack("Bronze", ethers.parseUnits("50", 18), 5);
 
 		//add erc20 token to payment
 		await packPayment.addERC20Payment(

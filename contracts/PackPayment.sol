@@ -55,7 +55,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
         packCounter = 1;
     }
 
-    function CreatePack(
+    function createPack(
         string memory _name,
         uint256 nativePrice,
         uint256 _inventory
