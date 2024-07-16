@@ -131,7 +131,9 @@ contract PackPayment is Ownable, ReentrancyGuard {
             packViews[i].id = packs[i].id;
             packViews[i].name = packs[i].name;
             packViews[i].nativePayment = packs[i].nativePayment;
-            for (uint256 j = 0; j < packs[i].erc20PaymentCounter; j++) {}
+            for (uint256 j = 0; j < packs[i].erc20PaymentCounter; j++) {
+                packViews[i].erc20Payment[j] = packs[i].erc20Payment[j];
+            }
         }
         return packViews;
     }
@@ -150,30 +152,19 @@ contract PackPayment is Ownable, ReentrancyGuard {
         );
         // check if the token is in the pack
         bool tokenExist = false;
-
-        for (uint256 i = 0; i < packs[_packId].erc20PaymentCounter; i++) {
-            if (packs[_packId].erc20Payment[i].token == _token) {
-                tokenExist = true;
-                break;
-            }
-        }
-        if (!tokenExist) revert ERC20TokenNotSupported();
-
-        // check if the amount is enough
         uint256 price = 0;
 
         for (uint256 i = 0; i < packs[_packId].erc20PaymentCounter; i++) {
             if (packs[_packId].erc20Payment[i].token == _token) {
+                tokenExist = true;
                 price = packs[_packId].erc20Payment[i].price;
                 break;
             }
         }
-
+        if (!tokenExist) revert ERC20TokenNotSupported();
         if (_amount < price) revert PaymentNotEnough();
-        packs[_packId].inventory--;
 
-        //approve the contract to spend the token
-        bool approved = IERC20(_token).approve(address(this), _amount);
+        packs[_packId].inventory--;
 
         // transfer the token to the owner
         bool result = IERC20(_token).transferFrom(
