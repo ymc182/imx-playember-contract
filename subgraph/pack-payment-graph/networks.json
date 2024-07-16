@@ -1,8 +1,0 @@
-{
-  "polygon-zkevm-testnet": {
-    "PackPayment": {
-      "address": "0xDd66e40689eAbcA00C70EC25f1857516cf312a03",
-      "startBlock": 0
-    }
-  }
-}
