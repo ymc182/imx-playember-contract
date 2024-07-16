@@ -57,7 +57,7 @@ describe("Onboard", function () {
 			await tx.wait();
 
 			const promises = wallets.map((wallet) =>
-				analyticsBase.connect(wallet).earnBadges()
+				analyticsBase.connect(wallet).gameEventExecute("onboard")
 			);
 
 			await Promise.all(promises);

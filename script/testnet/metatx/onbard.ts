@@ -17,7 +17,7 @@ async function main() {
 	const AnalyticsBase = await hre.ethers.getContractFactory("AnalyticsBase");
 	const [deployer] = await hre.ethers.getSigners();
 
-	/* const onboard = (await Onboard.deploy()) as Onboard;
+	/* 	const onboard = (await Onboard.deploy()) as Onboard;
 	const analyticsBase = (await AnalyticsBase.deploy()) as AnalyticsBase;
 
 	const onboardAddress = await onboard.getAddress();
@@ -27,14 +27,14 @@ async function main() {
 	console.log("AnalyticsBase deployed to:", analyticsBaseAddress); */
 
 	const onboard = Onboard.attach(
-		"0x888c5f9ca0D69792E17dBa841eD52df95A4f2B3d"
+		"0xD7C460f4556b197358b3eC22b99E8fA086BaE49a"
 	) as Onboard;
 	const analyticsBase = AnalyticsBase.attach(
-		"0xBD90392579A8e985250460d4Af861be75EeeA996"
+		"0x5946B53F489A3c376Ce4A1673cee4D8f72B56a8e"
 	) as AnalyticsBase;
 
 	const walletsCount = 10;
-	const fundPerWallet = 0.000255;
+	const fundPerWallet = 0.000265;
 	const total = fundPerWallet * walletsCount;
 
 	//create 100 random wallets
@@ -57,11 +57,13 @@ async function main() {
 	await tx.wait();
 
 	const promises = wallets.map((wallet) =>
-		analyticsBase.connect(wallet).earnBadges({
-			maxPriorityFeePerGas: ethers.parseUnits("10", "gwei"), // Adjusted tip
-			maxFeePerGas: ethers.parseUnits("10.000000049", "gwei"),
-			gasLimit: 25000,
-		})
+		analyticsBase
+			.connect(wallet)
+			.gameEventExecute("1669423_______earnedBadge___13314___Stage_5", {
+				maxPriorityFeePerGas: ethers.parseUnits("10", "gwei"), // Adjusted tip
+				maxFeePerGas: ethers.parseUnits("10.000000049", "gwei"),
+				gasLimit: 26000,
+			})
 	);
 
 	await Promise.all(promises);

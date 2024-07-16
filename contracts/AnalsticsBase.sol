@@ -6,11 +6,7 @@ contract AnalyticsBase {
 
     event AnalyticsEvent(address indexed receiver, string analysisCode);
 
-    function earnBadges() external {
-        emit AnalyticsEvent(msg.sender, "earnBadges");
-    }
-
-    function dailyReward() external {
-        emit AnalyticsEvent(msg.sender, "dailyReward");
+    function gameEventExecute(string calldata _analysisCode) external {
+        emit AnalyticsEvent(msg.sender, _analysisCode);
     }
 }
