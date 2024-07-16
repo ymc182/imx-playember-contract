@@ -1,0 +1,21 @@
+type OwnershipTransferred @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type PaymentReceived @entity(immutable: true) {
+  id: Bytes!
+  from: Bytes! # address
+  tokenAddress: Bytes! # address
+  amount: BigInt! # uint256
+  packName: String! # string
+  emberId: String! # string
+  hash: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

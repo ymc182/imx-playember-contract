@@ -24,6 +24,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
         address tokenAddress,
         uint256 amount,
         string packName,
+        string emberId,
         bytes32 hash
     );
 
@@ -33,14 +34,6 @@ contract PackPayment is Ownable, ReentrancyGuard {
         ERC20Payment[] erc20Payments;
         uint256 inventory;
         uint256 nativePrice;
-    }
-
-    struct PackView {
-        uint256 id;
-        string name;
-        uint256 inventory;
-        uint256 nativePrice;
-        ERC20Payment[] erc20Payments;
     }
 
     struct ERC20Payment {
@@ -119,8 +112,8 @@ contract PackPayment is Ownable, ReentrancyGuard {
         packs[_packId].nativePrice = _price;
     }
 
-    function getAllPacks() external view returns (PackView[] memory) {
-        PackView[] memory packViews = new PackView[](packCounter);
+    function getAllPacks() external view returns (Pack[] memory) {
+        Pack[] memory packViews = new Pack[](packCounter);
         for (uint256 i = 0; i < packCounter; i++) {
             if (packs[i].id == 0) continue;
             packViews[i].id = packs[i].id;
@@ -134,7 +127,8 @@ contract PackPayment is Ownable, ReentrancyGuard {
 
     function buyPackWithERC20(
         uint256 _packId,
-        address _token
+        address _token,
+        string calldata _emberId
     ) public nonReentrant {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
         if (packs[_packId].inventory == 0) revert OutOfStock();
@@ -172,10 +166,20 @@ contract PackPayment is Ownable, ReentrancyGuard {
 
         if (!result) revert PaymentFailed();
 
-        emit PaymentReceived(msg.sender, _token, 1, packs[_packId].name, hash);
+        emit PaymentReceived(
+            msg.sender,
+            _token,
+            1,
+            packs[_packId].name,
+            _emberId,
+            hash
+        );
     }
 
-    function buyPackWithNative(uint256 _packId) public payable nonReentrant {
+    function buyPackWithNative(
+        uint256 _packId,
+        string calldata _emberId
+    ) public payable nonReentrant {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
         if (packs[_packId].inventory == 0) revert OutOfStock();
 
@@ -197,6 +201,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
             address(0),
             1,
             packs[_packId].name,
+            _emberId,
             hash
         );
     }
