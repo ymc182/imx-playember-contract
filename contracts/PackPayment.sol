@@ -134,15 +134,19 @@ contract PackPayment is Ownable, ReentrancyGuard {
 
     function buyPackWithERC20(
         uint256 _packId,
-        address _token,
-        uint256 _amount
+        address _token
     ) public nonReentrant {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
         if (packs[_packId].inventory == 0) revert OutOfStock();
         uint256 ercPaymentLength = packs[_packId].erc20Payments.length;
         if (ercPaymentLength == 0) revert ERC20PaymentNotSupported();
         bytes32 hash = keccak256(
-            abi.encodePacked(block.timestamp, msg.sender, packs[_packId].name)
+            abi.encodePacked(
+                block.timestamp,
+                msg.sender,
+                packs[_packId].name,
+                packs[_packId].inventory
+            )
         );
         // check if the token is in the pack
         bool tokenExist = false;
@@ -155,7 +159,6 @@ contract PackPayment is Ownable, ReentrancyGuard {
                 break;
             }
         }
-        uint256 totalPrice = price * _amount;
         if (!tokenExist) revert ERC20TokenNotSupported();
 
         packs[_packId].inventory--;
@@ -164,18 +167,12 @@ contract PackPayment is Ownable, ReentrancyGuard {
         bool result = IERC20(_token).transferFrom(
             msg.sender,
             paymentReceiver,
-            totalPrice
+            price
         );
 
         if (!result) revert PaymentFailed();
 
-        emit PaymentReceived(
-            msg.sender,
-            _token,
-            _amount,
-            packs[_packId].name,
-            hash
-        );
+        emit PaymentReceived(msg.sender, _token, 1, packs[_packId].name, hash);
     }
 
     function buyPackWithNative(uint256 _packId) public payable nonReentrant {
@@ -184,7 +181,12 @@ contract PackPayment is Ownable, ReentrancyGuard {
 
         //random hash to prevent frontrunning
         bytes32 hash = keccak256(
-            abi.encodePacked(block.timestamp, msg.sender, packs[_packId].name)
+            abi.encodePacked(
+                block.timestamp,
+                msg.sender,
+                packs[_packId].name,
+                packs[_packId].inventory
+            )
         );
         uint256 price = packs[_packId].nativePrice;
         if (msg.value < price) revert PaymentNotEnough();
@@ -193,7 +195,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
         emit PaymentReceived(
             msg.sender,
             address(0),
-            msg.value,
+            1,
             packs[_packId].name,
             hash
         );

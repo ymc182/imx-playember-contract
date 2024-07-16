@@ -19,6 +19,21 @@ describe("PackPayment", function () {
 			"TTT",
 			"1000000000000000000000"
 		)) as USDC;
+
+		//track events
+		const typedContractEvent = packPayment.filters.PaymentReceived;
+		packPayment.on(
+			typedContractEvent,
+			(from, tokenAddress, amount, packName, hash) => {
+				console.log("PaymentReceived", {
+					from,
+					tokenAddress,
+					amount,
+					packName,
+					hash,
+				});
+			}
+		);
 		return {
 			packPayment,
 			dummyToken,
@@ -66,10 +81,10 @@ describe("PackPayment", function () {
 		);
 
 		//buy pack with erc20 token
-		await packPayment.buyPackWithERC20(1, await dummyToken.getAddress(), 1);
+		await packPayment.buyPackWithERC20(1, await dummyToken.getAddress());
 
 		await expect(
-			packPayment.buyPackWithERC20(1, await dummyToken.getAddress(), 1)
+			packPayment.buyPackWithERC20(1, await dummyToken.getAddress())
 		).to.be.revertedWith("ERC20: insufficient allowance");
 
 		await packPayment.buyPackWithNative(1, {
