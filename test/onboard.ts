@@ -62,7 +62,7 @@ describe("Onboard", function () {
 
 			await Promise.all(promises);
 
-			console.log("Badges earned for all wallets");
+			console.log("Event logged for all wallets");
 		});
 	});
 });

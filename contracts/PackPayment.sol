@@ -30,17 +30,17 @@ contract PackPayment is Ownable, ReentrancyGuard {
     struct Pack {
         uint256 id;
         string name;
-        mapping(uint256 => ERC20Payment) erc20Payment;
-        NativePayment nativePayment;
-        uint256 erc20PaymentCounter;
+        ERC20Payment[] erc20Payments;
         uint256 inventory;
+        uint256 nativePrice;
     }
 
     struct PackView {
         uint256 id;
         string name;
-        ERC20Payment[] erc20Payment;
-        NativePayment nativePayment;
+        uint256 inventory;
+        uint256 nativePrice;
+        ERC20Payment[] erc20Payments;
     }
 
     struct ERC20Payment {
@@ -48,14 +48,11 @@ contract PackPayment is Ownable, ReentrancyGuard {
         uint256 price;
     }
 
-    struct NativePayment {
-        uint256 price;
-    }
-
     mapping(uint256 => Pack) public packs;
 
     constructor(address _paymentReceiver) Ownable() {
         paymentReceiver = _paymentReceiver;
+        packCounter = 1;
     }
 
     function CreatePack(
@@ -65,8 +62,8 @@ contract PackPayment is Ownable, ReentrancyGuard {
     ) public onlyOwner {
         packs[packCounter].id = packCounter;
         packs[packCounter].name = _name;
-        packs[packCounter].nativePayment.price = nativePrice;
         packs[packCounter].inventory = _inventory;
+        packs[packCounter].nativePrice = nativePrice;
         packCounter++;
     }
 
@@ -80,16 +77,16 @@ contract PackPayment is Ownable, ReentrancyGuard {
         uint256 _price
     ) public onlyOwner {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
-
-        for (uint256 i = 0; i < packs[_packId].erc20PaymentCounter; i++) {
-            if (packs[_packId].erc20Payment[i].token == _token)
-                revert ERC20TokenAddressAlreadyExist();
+        uint256 length = packs[_packId].erc20Payments.length;
+        if (length > 0) {
+            for (uint256 i = 0; i < packs[_packId].erc20Payments.length; i++) {
+                if (packs[_packId].erc20Payments[i].token == _token)
+                    revert ERC20TokenAddressAlreadyExist();
+            }
         }
 
-        uint256 erc20PaymentCounter = packs[_packId].erc20PaymentCounter;
         ERC20Payment memory erc20Payment = ERC20Payment(_token, _price);
-        packs[_packId].erc20Payment[erc20PaymentCounter] = erc20Payment;
-        packs[_packId].erc20PaymentCounter++;
+        packs[_packId].erc20Payments.push(erc20Payment);
     }
 
     function removeERC20Payment(
@@ -97,31 +94,29 @@ contract PackPayment is Ownable, ReentrancyGuard {
         address _token
     ) public onlyOwner {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
-        if (packs[_packId].erc20PaymentCounter == 0)
+        if (packs[_packId].erc20Payments.length == 0)
             revert ERC20PaymentNotSupported();
         // find the index of the token
         uint256 index = 0;
-        for (uint256 i = 0; i < packs[_packId].erc20PaymentCounter; i++) {
-            if (packs[_packId].erc20Payment[i].token == _token) {
+        uint256 length = packs[_packId].erc20Payments.length;
+        for (uint256 i = 0; i < length; i++) {
+            if (packs[_packId].erc20Payments[i].token == _token) {
                 index = i;
                 break;
             }
         }
         //swap the last element with the element to be deleted
-        packs[_packId].erc20Payment[index] = packs[_packId].erc20Payment[
-            packs[_packId].erc20PaymentCounter - 1
+        packs[_packId].erc20Payments[index] = packs[_packId].erc20Payments[
+            length - 1
         ];
-        packs[_packId].erc20PaymentCounter--;
+
         //delete the last element
-        delete packs[_packId].erc20Payment[packs[_packId].erc20PaymentCounter];
+        delete packs[_packId].erc20Payments[length - 1];
     }
 
-    function addNativePayment(
-        uint256 _packId,
-        uint256 _price
-    ) public onlyOwner {
+    function setNativePrice(uint256 _packId, uint256 _price) public onlyOwner {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
-        packs[_packId].nativePayment.price = _price;
+        packs[_packId].nativePrice = _price;
     }
 
     function getAllPacks() external view returns (PackView[] memory) {
@@ -130,10 +125,9 @@ contract PackPayment is Ownable, ReentrancyGuard {
             if (packs[i].id == 0) continue;
             packViews[i].id = packs[i].id;
             packViews[i].name = packs[i].name;
-            packViews[i].nativePayment = packs[i].nativePayment;
-            for (uint256 j = 0; j < packs[i].erc20PaymentCounter; j++) {
-                packViews[i].erc20Payment[j] = packs[i].erc20Payment[j];
-            }
+            packViews[i].inventory = packs[i].inventory;
+            packViews[i].nativePrice = packs[i].nativePrice;
+            packViews[i].erc20Payments = packs[i].erc20Payments;
         }
         return packViews;
     }
@@ -145,8 +139,8 @@ contract PackPayment is Ownable, ReentrancyGuard {
     ) public nonReentrant {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
         if (packs[_packId].inventory == 0) revert OutOfStock();
-        if (packs[_packId].erc20PaymentCounter == 0)
-            revert ERC20PaymentNotSupported();
+        uint256 ercPaymentLength = packs[_packId].erc20Payments.length;
+        if (ercPaymentLength == 0) revert ERC20PaymentNotSupported();
         bytes32 hash = keccak256(
             abi.encodePacked(block.timestamp, msg.sender, packs[_packId].name)
         );
@@ -154,15 +148,15 @@ contract PackPayment is Ownable, ReentrancyGuard {
         bool tokenExist = false;
         uint256 price = 0;
 
-        for (uint256 i = 0; i < packs[_packId].erc20PaymentCounter; i++) {
-            if (packs[_packId].erc20Payment[i].token == _token) {
+        for (uint256 i = 0; i < ercPaymentLength; i++) {
+            if (packs[_packId].erc20Payments[i].token == _token) {
                 tokenExist = true;
-                price = packs[_packId].erc20Payment[i].price;
+                price = packs[_packId].erc20Payments[i].price;
                 break;
             }
         }
+        uint256 totalPrice = price * _amount;
         if (!tokenExist) revert ERC20TokenNotSupported();
-        if (_amount < price) revert PaymentNotEnough();
 
         packs[_packId].inventory--;
 
@@ -170,7 +164,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
         bool result = IERC20(_token).transferFrom(
             msg.sender,
             paymentReceiver,
-            _amount
+            totalPrice
         );
 
         if (!result) revert PaymentFailed();
@@ -192,7 +186,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
         bytes32 hash = keccak256(
             abi.encodePacked(block.timestamp, msg.sender, packs[_packId].name)
         );
-        uint256 price = packs[_packId].nativePayment.price;
+        uint256 price = packs[_packId].nativePrice;
         if (msg.value < price) revert PaymentNotEnough();
         packs[_packId].inventory--;
         payable(paymentReceiver).transfer(msg.value);
