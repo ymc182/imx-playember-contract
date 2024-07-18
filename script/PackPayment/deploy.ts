@@ -6,7 +6,6 @@ async function main() {
 	const packPayment = (await PackPayment.deploy(
 		deployer.address
 	)) as PackPayment;
-	await packPayment.createPack("Gold", ethers.parseUnits("100", 18), 1000);
 
 	console.log("PackPayment deployed to:", await packPayment.getAddress());
 }
@@ -17,3 +16,5 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
+
+//0xb61Ba02E7687c13c1b78E42aBA9015fac0BA0B8B

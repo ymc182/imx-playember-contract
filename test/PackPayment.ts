@@ -24,13 +24,14 @@ describe("PackPayment", function () {
 		const typedContractEvent = packPayment.filters.PaymentReceived;
 		packPayment.on(
 			typedContractEvent,
-			(from, tokenAddress, amount, packName, emberId, hash) => {
+			(from, tokenAddress, amount, packName, emberId, gameId, hash) => {
 				console.log("PaymentReceived", {
 					from,
 					tokenAddress,
 					amount,
 					packName,
 					emberId,
+					gameId,
 					hash,
 				});
 			}
@@ -64,11 +65,11 @@ describe("PackPayment", function () {
 		console.dir(packs, { depth: null });
 
 		//buy pack with native token
-		await packPayment.buyPackWithNative(1, "ymc@ewtd.io", 2, {
+		await packPayment.buyPackWithNative(1, "ymc@ewtd.io", "gameId1", 2, {
 			value: ethers.parseUnits("200", 18),
 		});
 		await expect(
-			packPayment.buyPackWithNative(1, "ymc@ewtd.io", 1, {
+			packPayment.buyPackWithNative(1, "ymc@ewtd.io", "gameId1", 1, {
 				value: ethers.parseUnits("99", 18),
 			})
 		).to.be.revertedWithCustomError(packPayment, "PaymentNotEnough");
@@ -87,6 +88,7 @@ describe("PackPayment", function () {
 			1,
 			await dummyToken.getAddress(),
 			"ymc@ewtd.io",
+			"gameId1",
 			1
 		);
 
@@ -95,18 +97,19 @@ describe("PackPayment", function () {
 				1,
 				await dummyToken.getAddress(),
 				"ymc@ewtd.io",
+				"gameId1",
 				1
 			)
 		).to.be.revertedWith("ERC20: insufficient allowance");
 
-		await packPayment.buyPackWithNative(1, "ymc@ewtd.io", 1, {
+		await packPayment.buyPackWithNative(1, "ymc@ewtd.io", "gameId1", 1, {
 			value: ethers.parseUnits("100", 18),
 		});
 		packs = await packPayment.getAllPacks();
 		console.dir(packs, { depth: null });
 
 		await expect(
-			packPayment.buyPackWithNative(1, "ymc@ewtd.io", 1, {
+			packPayment.buyPackWithNative(1, "ymc@ewtd.io", "gameId1", 1, {
 				value: ethers.parseUnits("100", 18),
 			})
 		).to.be.revertedWithCustomError(packPayment, "OutOfStock");

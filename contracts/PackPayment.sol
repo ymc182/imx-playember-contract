@@ -25,6 +25,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
         uint256 amount,
         string packName,
         string emberId,
+        string gameId,
         bytes32 hash
     );
 
@@ -129,36 +130,36 @@ contract PackPayment is Ownable, ReentrancyGuard {
         uint256 _packId,
         address _token,
         string calldata _emberId,
+        string calldata _gameId,
         uint256 _amount
     ) public nonReentrant {
-        if (packs[_packId].id == 0) revert PackDoesNotExist();
-        if (packs[_packId].inventory == 0) revert OutOfStock();
-        if (packs[_packId].inventory < _amount) revert OutOfStock();
-
-        uint256 ercPaymentLength = packs[_packId].erc20Payments.length;
-        if (ercPaymentLength == 0) revert ERC20PaymentNotSupported();
+        Pack memory pack = packs[_packId];
+        if (pack.id == 0) revert PackDoesNotExist();
+        if (pack.inventory == 0) revert OutOfStock();
+        if (pack.inventory < _amount) revert OutOfStock();
+        if (pack.erc20Payments.length == 0) revert ERC20PaymentNotSupported();
         bytes32 hash = keccak256(
             abi.encodePacked(
                 block.timestamp,
                 msg.sender,
-                packs[_packId].name,
-                packs[_packId].inventory
+                pack.name,
+                pack.inventory
             )
         );
         // check if the token is in the pack
         bool tokenExist = false;
         uint256 price = 0;
 
-        for (uint256 i = 0; i < ercPaymentLength; i++) {
-            if (packs[_packId].erc20Payments[i].token == _token) {
+        for (uint256 i = 0; i < pack.erc20Payments.length; i++) {
+            if (pack.erc20Payments[i].token == _token) {
                 tokenExist = true;
-                price = packs[_packId].erc20Payments[i].price;
+                price = pack.erc20Payments[i].price;
                 break;
             }
         }
         if (!tokenExist) revert ERC20TokenNotSupported();
 
-        packs[_packId].inventory--;
+        pack.inventory -= _amount;
 
         // transfer the token to the owner
         bool result = IERC20(_token).transferFrom(
@@ -173,8 +174,9 @@ contract PackPayment is Ownable, ReentrancyGuard {
             msg.sender,
             _token,
             _amount,
-            packs[_packId].name,
+            pack.name,
             _emberId,
+            _gameId,
             hash
         );
     }
@@ -182,6 +184,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
     function buyPackWithNative(
         uint256 _packId,
         string calldata _emberId,
+        string calldata _gameId,
         uint256 _amount
     ) public payable nonReentrant {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
@@ -208,6 +211,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
             _amount,
             packs[_packId].name,
             _emberId,
+            _gameId,
             hash
         );
     }
