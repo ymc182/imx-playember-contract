@@ -5,9 +5,8 @@ async function main() {
 	const PackPayment = await hre.ethers.getContractFactory("PackPayment");
 	const contractAddress = "0xDd66e40689eAbcA00C70EC25f1857516cf312a03";
 	const packPayment = PackPayment.attach(contractAddress) as PackPayment;
-	await packPayment.buyPackWithNative(1, "ymc@ewtd.io", 1, {
-		value: ethers.parseEther("0.001"),
-	});
+	await packPayment.removePack(1);
+	await packPayment.removePack(2);
 
 	const packs = await packPayment.getAllPacks();
 	console.log(packs);

@@ -64,11 +64,11 @@ describe("PackPayment", function () {
 		console.dir(packs, { depth: null });
 
 		//buy pack with native token
-		await packPayment.buyPackWithNative(1, "ymc@ewtd.io", {
-			value: ethers.parseUnits("100", 18),
+		await packPayment.buyPackWithNative(1, "ymc@ewtd.io", 2, {
+			value: ethers.parseUnits("200", 18),
 		});
 		await expect(
-			packPayment.buyPackWithNative(1, "ymc@ewtd.io", {
+			packPayment.buyPackWithNative(1, "ymc@ewtd.io", 1, {
 				value: ethers.parseUnits("99", 18),
 			})
 		).to.be.revertedWithCustomError(packPayment, "PaymentNotEnough");
@@ -86,25 +86,27 @@ describe("PackPayment", function () {
 		await packPayment.buyPackWithERC20(
 			1,
 			await dummyToken.getAddress(),
-			"ymc@ewtd.io"
+			"ymc@ewtd.io",
+			1
 		);
 
 		await expect(
 			packPayment.buyPackWithERC20(
 				1,
 				await dummyToken.getAddress(),
-				"ymc@ewtd.io"
+				"ymc@ewtd.io",
+				1
 			)
 		).to.be.revertedWith("ERC20: insufficient allowance");
 
-		await packPayment.buyPackWithNative(1, "ymc@ewtd.io", {
+		await packPayment.buyPackWithNative(1, "ymc@ewtd.io", 1, {
 			value: ethers.parseUnits("100", 18),
 		});
 		packs = await packPayment.getAllPacks();
 		console.dir(packs, { depth: null });
 
 		await expect(
-			packPayment.buyPackWithNative(1, "ymc@ewtd.io", {
+			packPayment.buyPackWithNative(1, "ymc@ewtd.io", 1, {
 				value: ethers.parseUnits("100", 18),
 			})
 		).to.be.revertedWithCustomError(packPayment, "OutOfStock");

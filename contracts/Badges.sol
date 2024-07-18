@@ -55,6 +55,16 @@ contract Badges is ImmutableERC721 {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
+    function batchTransfer(
+        address from,
+        address to,
+        uint256[] calldata tokenIDs
+    ) external onlyRole(MINTER_ROLE) {
+        for (uint256 i = 0; i < tokenIDs.length; i++) {
+            _transfer(from, to, tokenIDs[i]);
+        }
+    }
+
     function minterBurnBatch(
         uint256[] calldata tokenIDs
     ) external onlyRole(MINTER_ROLE) {

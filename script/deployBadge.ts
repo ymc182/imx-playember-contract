@@ -22,7 +22,7 @@ async function main() {
 	console.log("Badge deployed to:", await badge.getAddress());
 	await badge.grantMinterRole(mainnetMintingAPI);
 	await badge.grantMinterRole(deployer);
-	console.log("Role granted for BoosterKey");
+	console.log("Role granted for Badges");
 
 	return {
 		badge,

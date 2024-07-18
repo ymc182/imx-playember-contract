@@ -128,10 +128,13 @@ contract PackPayment is Ownable, ReentrancyGuard {
     function buyPackWithERC20(
         uint256 _packId,
         address _token,
-        string calldata _emberId
+        string calldata _emberId,
+        uint256 _amount
     ) public nonReentrant {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
         if (packs[_packId].inventory == 0) revert OutOfStock();
+        if (packs[_packId].inventory < _amount) revert OutOfStock();
+
         uint256 ercPaymentLength = packs[_packId].erc20Payments.length;
         if (ercPaymentLength == 0) revert ERC20PaymentNotSupported();
         bytes32 hash = keccak256(
@@ -161,7 +164,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
         bool result = IERC20(_token).transferFrom(
             msg.sender,
             paymentReceiver,
-            price
+            price * _amount
         );
 
         if (!result) revert PaymentFailed();
@@ -169,7 +172,7 @@ contract PackPayment is Ownable, ReentrancyGuard {
         emit PaymentReceived(
             msg.sender,
             _token,
-            1,
+            _amount,
             packs[_packId].name,
             _emberId,
             hash
@@ -178,10 +181,13 @@ contract PackPayment is Ownable, ReentrancyGuard {
 
     function buyPackWithNative(
         uint256 _packId,
-        string calldata _emberId
+        string calldata _emberId,
+        uint256 _amount
     ) public payable nonReentrant {
         if (packs[_packId].id == 0) revert PackDoesNotExist();
         if (packs[_packId].inventory == 0) revert OutOfStock();
+        if (packs[_packId].inventory < _amount) revert OutOfStock();
+        if (packs[_packId].nativePrice == 0) revert ERC20PaymentNotSupported();
 
         //random hash to prevent frontrunning
         bytes32 hash = keccak256(
@@ -192,14 +198,14 @@ contract PackPayment is Ownable, ReentrancyGuard {
                 packs[_packId].inventory
             )
         );
-        uint256 price = packs[_packId].nativePrice;
-        if (msg.value < price) revert PaymentNotEnough();
-        packs[_packId].inventory--;
+        uint256 totalPrice = packs[_packId].nativePrice * _amount;
+        if (msg.value < totalPrice) revert PaymentNotEnough();
+        packs[_packId].inventory -= _amount;
         payable(paymentReceiver).transfer(msg.value);
         emit PaymentReceived(
             msg.sender,
             address(0),
-            1,
+            _amount,
             packs[_packId].name,
             _emberId,
             hash
