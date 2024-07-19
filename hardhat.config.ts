@@ -12,6 +12,7 @@ const config: HardhatUserConfig = {
 			},
 		},
 	},
+
 	networks: {
 		mainnet: {
 			url: "https://rpc.immutable.com/",

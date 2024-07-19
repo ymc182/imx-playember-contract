@@ -1,0 +1,18 @@
+{
+  "name": "packpayment-mainnet/1.0.0",
+  "version": "1",
+  "abis": {
+    "packpayment": {
+      "path": "./abis/packpayment.json"
+    }
+  },
+  "instances": [
+    {
+      "abi": "packpayment",
+      "address": "0x412320d2b61EF917E87DBF5C5386a29EfED63Cae",
+      "startBlock": 9555720,
+      "chain": "imtbl-zkevm"
+    }
+  ],
+  "enableCallHandlers": false
+}
