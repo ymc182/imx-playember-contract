@@ -215,4 +215,8 @@ contract PackPayment is Ownable, ReentrancyGuard {
             hash
         );
     }
+
+    function setPaymentReceiver(address _paymentReceiver) public onlyOwner {
+        paymentReceiver = _paymentReceiver;
+    }
 }

@@ -7,7 +7,7 @@
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.78.0",
     "@graphprotocol/graph-ts": "^0.35.1",
-    "@imtbl/contracts": "^2.2.3",
+    "@imtbl/contracts": "^2.2.9",
     "@xyrusworx/hardhat-solidity-json": "^1.0.2",
     "dotenv": "^16.4.5"
   }

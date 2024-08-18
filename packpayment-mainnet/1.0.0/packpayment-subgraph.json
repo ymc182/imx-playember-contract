@@ -1,5 +1,5 @@
 {
-  "name": "packpayment-mainnet/1.0.0",
+  "name": "packpayment/1.0.0",
   "version": "1",
   "abis": {
     "packpayment": {
@@ -9,8 +9,8 @@
   "instances": [
     {
       "abi": "packpayment",
-      "address": "0x412320d2b61EF917E87DBF5C5386a29EfED63Cae",
-      "startBlock": 9555720,
+      "address": "0x3D4aA501F4Dc901bC5383F32aAc6630cAFF45420",
+      "startBlock": 10803773,
       "chain": "imtbl-zkevm"
     }
   ],
