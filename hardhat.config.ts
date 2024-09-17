@@ -22,6 +22,10 @@ const config: HardhatUserConfig = {
 			url: "https://rpc.testnet.immutable.com/",
 			accounts: [process.env.PRIVATE_KEY!],
 		},
+		eth: {
+			url: "https://eth.llamarpc.com",
+			accounts: [process.env.PRIVATE_KEY!],
+		},
 	},
 };
 

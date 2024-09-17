@@ -4,6 +4,7 @@ import { PACK_PAYMENT_TESTNET_CONTRACT } from "./constant";
 async function main() {
 	const [deployer] = await hre.ethers.getSigners();
 	const PackPayment = await hre.ethers.getContractFactory("PackPayment");
+
 	const packPayment = PackPayment.attach(
 		PACK_PAYMENT_TESTNET_CONTRACT
 	) as PackPayment;

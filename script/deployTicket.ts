@@ -14,12 +14,12 @@ async function main() {
 		"Ticket",
 		"https://store.ewtd-ipfs.net/ticket-metadata/",
 		"https://store.ewtd-ipfs.net/ticket-metadata/collection.json",
-		testnetOperator,
+		mainnetOperator,
 		"0xe163065978d9dB0CFa763cbeFcD5A9918bBbe116",
 		"0"
 	);
 	console.log("Ticket deployed to:", await ticket.getAddress());
-	await ticket.grantMinterRole(testnetMintingAPI);
+	await ticket.grantMinterRole(mainnetMintingAPI);
 	await ticket.grantMinterRole(deployer);
 	console.log("Role granted for Badges");
 
